@@ -1,13 +1,12 @@
-const Users = require('../../models/Users')
-const jwt = require('jsonwebtoken')
+const UserModel = require('../../models/UserModel')
 const { sign, verify } = require('../../jwt')
 
 // Athentication Middleware
 const authMiddleware = async (req, res, next) => {
-    const [, token] = req.headers.authorization.split(' ')
     try {
+        const [hashType, token] = req.headers.authorization.split(' ')
         const payload = await verify(token)
-        const user = await Users.findById(payload.user)
+        const user = await UserModel.findById(payload.user)
         if(!user) { return res.status(401).json({}) }
         req.auth = user
         next()        
@@ -18,48 +17,52 @@ module.exports = app => {
 
     // Authenticate User
     app.get('/api/signin', async (req, res, next) => {
-        const [hashType, hash] = req.headers.authorization.split(' ')
-        const [email, password] = Buffer.from(hash, 'base64').toString().split(':')
+        const preConfigErrorMsg = 'Não foi possível efetuar o login com estas credenciais.'
         try {
-            const user = await Users.findOne({ email, password })
-            if(!user) throw Error('Não foi possível efetuar o login com estas credenciais.')
+            const [hashType, hash] = req.headers.authorization.split(' ')
+            const [email, password] = Buffer.from(hash, 'base64').toString().split(':')
+            const user = await UserModel.findOne({ email, password })
+            if(!user) throw Error(preConfigErrorMsg)
 
             const token = sign({ user: user.id })
 
             res.status(200).json({ user, token })
         } catch (err) {
-            res.status(401).json({ message: err })
+            res.status(401).json({ title: preConfigErrorMsg, message: err })
         }
     })
 
     // GET All Users
     app.get('/api/users', authMiddleware, async (req, res, next) => {
+        const preConfigErrorMsg = 'Não há usuários para exibir.'
         try {
-            const users = await Users.find()
-            if(!users) throw Error('Não há usuários para exibir.')
+            const users = await UserModel.find()
+            if(!users) throw Error(preConfigErrorMsg)
             res.status(200).json(users)
         } catch (err) {
-            res.status(400).json({ message: err })
+            res.status(401).json({ title: preConfigErrorMsg, message: err })
         }
     })
 
     // GET User By Id
-    app.get('/api/users/:id', async (req, res, next) => {
+    app.get('/api/users/:id', authMiddleware, async (req, res, next) => {
+        const preConfigErrorMsg = preConfigErrorMsg
         try {
-            const user = await Users.findById(req.params.id)
-            if(!user) throw Error('Usuário não Encontrado.')
+            const user = await UserModel.findById(req.params.id)
+            if(!user) throw Error(preConfigErrorMsg)
             res.status(200).json(user)
         } catch (err) {
-            res.status(400).json({ message: err })
+            res.status(401).json({ title: preConfigErrorMsg, message: err })
         }
     })
 
     // Create New User
     app.post('/api/signup', async (req, res, next) => {
-        const newUser = new Users(req.body)
+        const preConfigErrorMsg = 'Houve um erro ao tentar criar usuário.'
         try {
+            const newUser = new UserModel(req.body)
             const userResult = await newUser.save();
-            if(!userResult) throw Error('Houve um erro ao tentar criar usuário.')
+            if(!userResult) throw Error(preConfigErrorMsg)
 
             const { password, ...user } = userResult.toObject()
 
@@ -67,29 +70,31 @@ module.exports = app => {
 
             res.status(201).json({ user, token })
         } catch (err) {
-            res.status(400).json({ message: err })
+            res.status(400).json({ title: preConfigErrorMsg, message: err })
         }
     })
 
     // Update an User
-    app.patch('/api/users/:id', async (req, res, next) => {
+    app.patch('/api/users/:id', authMiddleware, async (req, res, next) => {
+        const preConfigErrorMsg = 'Houve um erro ao tentar atualizar informações do usuário.'
         try {
-            const user = await Users.findByIdAndUpdate(req.params.id, req.body)
-            if(!user) throw Error('Houve um erro ao tentar atualizar informações do usuário.')
+            const user = await UserModel.findByIdAndUpdate(req.params.id, req.body)
+            if(!user) throw Error(preConfigErrorMsg)
             res.status(200).json({ success: true })
         } catch (err) {
-            res.status(400).json({ message: err })
+            res.status(401).json({ title: preConfigErrorMsg, message: err })
         }
     })
 
     // Delete an User
-    app.delete('/api/users/:id', async (req, res, next) => {
+    app.delete('/api/users/:id', authMiddleware, async (req, res, next) => {
+        const preConfigErrorMsg = 'Não foi possível deletar usuário.'
         try {
-            const user = await Users.findByIdAndDelete(req.params.id)
-            if(!user) throw Error('Não foi possível deletar usuário.')
+            const user = await UserModel.findByIdAndDelete(req.params.id)
+            if(!user) throw Error(preConfigErrorMsg)
             res.status(200).json({ success: true })
         } catch (err) {
-            res.status(400).json({ message: err })
+            res.status(401).json({ title: preConfigErrorMsg, message: err })
         }
     })
 
