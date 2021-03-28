@@ -4,7 +4,7 @@ Service created for application (client) that can be used by gyms.
 
 ## Installation
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
+Use the package manager [npm](https://www.npmjs.com/) to install dependencies.
 
 ```bash
 npm install
