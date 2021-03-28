@@ -2,6 +2,7 @@ const Users = require('../../models/Users')
 const jwt = require('jsonwebtoken')
 const { sign, verify } = require('../../jwt')
 
+// Athentication Middleware
 const authMiddleware = async (req, res, next) => {
     const [, token] = req.headers.authorization.split(' ')
     try {
