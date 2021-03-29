@@ -24,6 +24,23 @@ const UserSchema = new Schema({
         select: false,
         set: value => crypto.createHash('md5').update(value).digest('hex')
     },
+    status: {
+        type: Boolean,
+        require: true,
+        default: true,
+    },
+    birthDate: {
+        type: Date,
+        required: true,
+    },
+    plan: {
+        type: String,
+        required: true,
+    },
+    objective: {
+        type: String,
+        required: false,
+    },
 },
 {
     timestamps: true,
