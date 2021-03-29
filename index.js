@@ -16,4 +16,4 @@ app.use(express.urlencoded({ extended: false }))
 
 consign().include('routes').into(app)
 
-app.listen(PORT, '192.168.0.33', () => console.log(`==> Server is Running at http://192.168.0.33:${PORT}`))
+app.listen(PORT, () => console.log(`==> Server is Running at http://192.168.0.33:${PORT}`))
