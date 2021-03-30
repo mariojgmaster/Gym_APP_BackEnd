@@ -29,6 +29,17 @@ const UserSchema = new Schema({
         require: true,
         default: true,
     },
+    level: {
+        // Level 0 = Owner
+        // Level 1 = Admin 1
+        // Level 2 = Admin 2
+        // Level 3 = Coaches
+        // Level 4 = Other Employees
+        // Level 5 = Students
+        type: Number,
+        require: true,
+        default: 5,
+    },
     birthDate: {
         type: Date,
         required: true,
@@ -37,7 +48,7 @@ const UserSchema = new Schema({
         type: String,
         required: true,
     },
-    objective: {
+    goal: {
         type: String,
         required: false,
     },
